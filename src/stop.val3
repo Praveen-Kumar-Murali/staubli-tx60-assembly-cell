@@ -1,0 +1,24 @@
+/*
+ * ============================================================================
+ * Stäubli TX60 Assembly Cell
+ * Component: Stop and Recovery Routine
+ * ============================================================================
+ * 
+ * Description:
+ * Safely halts the assembly cell sequence, retracts the manipulator to the 
+ * absolute home position, disengages tools, and forces an override clear 
+ * of the motion stack buffer.
+ */
+
+begin
+  // Return to Safe Home Position
+  movej(Home, tTool, mNomSpeed)
+  
+  // Disengage pneumatics/gripper
+  open(tTool)
+  putln("System Halted: Home position established and gripper disengaged.")
+  
+  // Terminate execution and clear motion stack
+  popUpMsg("Warning: System execution halted. Imminent motion commands canceled.")
+  resetMotion()
+end

@@ -1,0 +1,197 @@
+/*
+ * ============================================================================
+ * Stäubli TX60 Assembly Cell
+ * Component: Start Routine (Assembly Sequence)
+ * ============================================================================
+ * 
+ * Description:
+ * This routine initializes the robot controller, establishes I/O links with 
+ * external sensors and actuators (dispenser/feeder), and executes a dynamic
+ * pick-and-place assembly sequence.
+ *
+ * Sequence Overview:
+ * 1. Interface initialization and I/O mapping.
+ * 2. Cylinder Pick: Trigger cylinder feeder, wait for proximity sensor, pick.
+ * 3. Cylinder Place: Move to assembly station and release cylinder.
+ * 4. Piston Pick: Scan piston pallet matrix dynamically for available pistons.
+ * 5. Piston Place / Assembly: Insert piston into the waiting cylinder.
+ * 6. Final Assembly Transfer: Pick the assembled unit and place in final matrix.
+ */
+
+begin
+  // Initialize Interface
+  userPage()
+  cls()
+  putln("System Initialized: Executing Assembly Sequence")
+  enablePower()
+
+  // ---------------------------------------------------------
+  // 1. I/O Sensor & Actuator Mapping
+  // ---------------------------------------------------------
+  dioLink(armGripper,     io:bOut0)
+  dioLink(cylFeeder,      io:bOut10)
+  dioLink(pistonPresent,  io:bIn0)
+  dioLink(cylReady,       io:bIn2)
+  dioLink(feederExtended, io:bIn14)
+  dioLink(feederContract, io:bIn15)
+
+  mNomSpeed.vel = 30
+
+  // Execute assembly operation for 4 distinct units
+  for i = 0 to 3
+
+    open(tTool)
+
+    // ---------------------------------------------------------
+    // 2. Dispenser Feeding & Validation
+    // ---------------------------------------------------------
+    if (cylReady == false)
+      putln("Cylinder not at pick position. Actuating pneumatic feeder...")
+      cylFeeder = true
+      wait(feederExtended == true)
+      wait(cylReady == true)
+      putln("Cylinder confirmed at pick station.")
+      
+      // Retract feeder
+      cylFeeder = false
+      wait(feederContract == true)
+    endIf
+
+    // ---------------------------------------------------------
+    // 3. Cylinder Pick (tTool[0])
+    // ---------------------------------------------------------
+    movej(pCylPoints[0], tTool[0], mNomSpeed)
+    waitEndMove()
+    delay(0.2)
+    
+    // Linear approach and pick
+    movej(appro(pCylPoints[1], {0,0,-30,0,0,0}), tTool[0], mNomSpeed)
+    waitEndMove()
+    movel(pCylPoints[1], tTool[0], mNomSpeed)
+    waitEndMove()
+    
+    close(tTool)
+    putln("Cylinder secured.")
+    
+    // Retract
+    movel(pCylPoints[0], tTool[0], mNomSpeed)
+    waitEndMove()
+
+    // ---------------------------------------------------------
+    // 4. Cylinder Place at Assembly Station
+    // ---------------------------------------------------------
+    movej(pCylPoints[2], tTool[0], mNomSpeed)
+    waitEndMove()
+    delay(0.2)
+    
+    movel(appro(pCylPoints[3], {0,0,-30,0,0,0}), tTool[0], mNomSpeed)
+    waitEndMove()
+    movel(pCylPoints[3], tTool[0], mNomSpeed)
+    waitEndMove()
+    
+    open(tTool)
+    putln("Cylinder placed at assembly station.")
+    
+    movel(pCylPoints[2], tTool[0], mNomSpeed)
+    waitEndMove()
+
+    // ---------------------------------------------------------
+    // 5. Piston Pick (Scanning Matrix, tTool[1])
+    // ---------------------------------------------------------
+    movej(pPistonMatrix[i + i], tTool[1], mNomSpeed)
+    waitEndMove()
+    delay(0.2)
+    
+    movel(appro(pPistonMatrix[i + i + 1], {0,0,-30,0,0,0}), tTool[1], mNomSpeed)
+    waitEndMove()
+    movel(pPistonMatrix[i + i + 1], tTool[1], mNomSpeed)
+    waitEndMove()
+
+    // Dynamic Sensor Scan: If empty, scan remaining matrix slots
+    if (pistonPresent == false)
+      putln("Slot empty. Scanning adjacent pallet positions...")
+      for j = i + 1 to 3
+        movel(pPistonMatrix[j + j - 2], tTool[1], mNomSpeed)
+        waitEndMove()
+        movej(pPistonMatrix[j + j], tTool[1], mNomSpeed)
+        waitEndMove()
+        movel(pPistonMatrix[j + j + 1], tTool[1], mNomSpeed)
+        waitEndMove()
+        
+        if (pistonPresent == true)
+          putln("Piston successfully acquired at alternative slot.")
+          i = j
+          j = 4 // Break inner loop
+        endIf
+      endFor
+    endIf
+
+    // ---------------------------------------------------------
+    // 6. Assembly: Insert Piston into Cylinder
+    // ---------------------------------------------------------
+    if (pistonPresent == true)
+      close(tTool)
+      
+      movel(pPistonMatrix[i + i], tTool[1], mNomSpeed)
+      waitEndMove()
+
+      movej(pAssemPiston[2], tTool[1], mNomSpeed)
+      waitEndMove()
+      delay(0.2)
+      
+      movel(appro(pAssemPiston[3], {0,0,-30,0,0,0}), tTool[1], mNomSpeed)
+      waitEndMove()
+      movel(pAssemPiston[3], tTool[1], mNomSpeed)
+      waitEndMove()
+      
+      open(tTool)
+      putln("Assembly successful: Piston inserted into Cylinder.")
+
+      movel(pAssemPiston[2], tTool[1], mNomSpeed)
+      waitEndMove()
+
+      // ---------------------------------------------------------
+      // 7. Transfer Assembled Unit to Final Matrix (tTool[0])
+      // ---------------------------------------------------------
+      movej(pCylPoints[2], tTool[0], mNomSpeed)
+      waitEndMove()
+      delay(0.2)
+      
+      movel(appro(pCylPoints[3], {0,0,-30,0,0,0}), tTool[0], mNomSpeed)
+      waitEndMove()
+      movel(pCylPoints[3], tTool[0], mNomSpeed)
+      waitEndMove()
+      
+      close(tTool)
+      
+      movel(pCylPoints[2], tTool[0], mNomSpeed)
+      waitEndMove()
+
+      movej(pFinalMatrix[i + i], tTool[0], mNomSpeed)
+      waitEndMove()
+      delay(0.2)
+      
+      movel(appro(pFinalMatrix[i + i + 1], {0,0,-30,0,0,0}), tTool[0], mNomSpeed)
+      waitEndMove()
+      movel(pFinalMatrix[i + i + 1], tTool[0], mNomSpeed)
+      waitEndMove()
+      
+      open(tTool)
+      putln("Completed unit deposited in Final Storage Matrix.")
+
+      movel(pFinalMatrix[i + i], tTool[0], mNomSpeed)
+      waitEndMove()
+
+    // ---------------------------------------------------------
+    // Error Handling: Piston Depletion
+    // ---------------------------------------------------------
+    else
+      putln("ALERT: Piston Depletion. Aborting assembly sequence.")
+      movel(pPistonMatrix[i + i], tTool[1], mNomSpeed)
+      waitEndMove()
+      movej(Home, tTool[0], mNomSpeed)
+      waitEndMove()
+    endIf
+
+  endFor
+end
