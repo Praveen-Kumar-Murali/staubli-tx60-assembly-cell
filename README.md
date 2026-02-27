@@ -32,7 +32,12 @@ This architecture serves as a foundational blueprint for complex industrial scen
 
 ## Demonstration
 
-### Demo Video
-[![Watch Demo](https://img.youtube.com/vi/UtPO76vpmHE/0.jpg)](https://youtu.be/UtPO76vpmHE?si=Naq585iC0w_VuyT8)
+### Level 1 Demo
+[![Watch Level 1 Demo](https://img.youtube.com/vi/5mQWhW7qSkw/0.jpg)](https://youtu.be/5mQWhW7qSkw?si=4pg9t_k1GCQpTnts)
 
-[Watch on YouTube](https://youtu.be/UtPO76vpmHE?si=Naq585iC0w_VuyT8)
+[Watch Level 1 on YouTube](https://youtu.be/5mQWhW7qSkw?si=4pg9t_k1GCQpTnts)
+
+### Level 2 Demo
+[![Watch Level 2 Demo](https://img.youtube.com/vi/UtPO76vpmHE/0.jpg)](https://youtu.be/UtPO76vpmHE?si=Naq585iC0w_VuyT8)
+
+[Watch Level 2 on YouTube](https://youtu.be/UtPO76vpmHE?si=Naq585iC0w_VuyT8)
