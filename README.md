@@ -32,8 +32,7 @@ This architecture serves as a foundational blueprint for complex industrial scen
 
 ## Demonstration
 
-### Simulation Run
-Video: [Insert Link to Simulation Drive / YouTube]
-*(See `simulation/simulation_video_link.txt`)*
+### Demo Video
+[![Watch Demo](https://img.youtube.com/vi/UtPO76vpmHE/0.jpg)](https://youtu.be/UtPO76vpmHE?si=Naq585iC0w_VuyT8)
 
-*(Note: Appropriate thumbnails and GIFs can be placed in `report/setup_images/` for visual reference)*
+[Watch on YouTube](https://youtu.be/UtPO76vpmHE?si=Naq585iC0w_VuyT8)
